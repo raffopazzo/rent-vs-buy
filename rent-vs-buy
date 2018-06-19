@@ -1,0 +1,63 @@
+#!/usr/bin/env python
+
+import argparse
+import csv
+import sys
+
+from matplotlib import pyplot
+
+def run(purchase_cost, sell_fee, house_price, interest_rate, duration, rent):
+    deposit = house_price * 0.1
+    loan = house_price - deposit
+    monthly_interest_rate = interest_rate/12
+    num_installments = 12 * duration
+    mortgage = loan * monthly_interest_rate / (1 - (1 + monthly_interest_rate) ** (-num_installments))
+    balance = loan
+    interest = 0
+    capital = 0
+    total_interest = 0
+    total_rent = 0
+    loss = 0
+    i = 0
+    while balance > 0:
+        yield dict(
+            month=i,
+            interest=interest,
+            capital=capital,
+            balance=balance,
+            loss=loss,
+            total_rent=total_rent)
+        i += 1
+        interest = balance * monthly_interest_rate
+        capital = mortgage - interest
+        total_interest += interest
+        balance = balance - capital
+        total_rent += rent
+        loss = total_interest + deposit + purchase_cost + sell_fee * house_price
+
+def main(purchase_cost, sell_fee, house_price, interest_rate, duration, rent, plot):
+    if plot:
+        loss = []
+        total_rent = []
+        for it in run(purchase_cost, sell_fee, house_price, interest_rate, duration, rent):
+            loss.append(it['loss'])
+            total_rent.append(it['total_rent'])
+        pyplot.plot(loss)
+        pyplot.plot(total_rent)
+        pyplot.show()
+    else:
+        writer = csv.DictWriter(sys.stdout, fieldnames=['month', 'interest', 'capital', 'balance', 'loss', 'total_rent'])
+        writer.writeheader()
+        for it in run(purchase_cost, sell_fee, house_price, interest_rate, duration, rent):
+            writer.writerow(it)
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Compare renting vs buying')
+    parser.add_argument('--house-price', type=int, required=True, help='Price of the house to buy')
+    parser.add_argument('--purchase-cost', type=int, required=True, help='Non-refundable purchase cost')
+    parser.add_argument('--sell-fee', type=float, required=True, help='% asked from agency to resell the house')
+    parser.add_argument('--interest-rate', type=float, required=True, help='Annual interest rate')
+    parser.add_argument('--duration', type=int, required=True, help='Duration of mortgage in  years')
+    parser.add_argument('--rent', type=int, required=True, help='Amount of rent')
+    parser.add_argument('--plot', action='store_true', help='Plot instead of writing csv')
+    main(**vars(parser.parse_args()))
