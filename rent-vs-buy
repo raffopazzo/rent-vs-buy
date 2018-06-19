@@ -48,7 +48,7 @@ def main(purchase_cost, sell_fee, house_price, ltv, interest_rate, duration, ren
     else:
         writer = csv.DictWriter(sys.stdout, fieldnames=['month', 'interest', 'capital', 'balance', 'loss', 'total_rent'])
         writer.writeheader()
-        for it in run(purchase_cost, sell_fee, house_price, interest_rate, duration, rent):
+        for it in run(purchase_cost, sell_fee, house_price, ltv, interest_rate, duration, rent):
             writer.writerow(it)
 
 if __name__ == '__main__':
