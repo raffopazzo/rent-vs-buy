@@ -6,8 +6,8 @@ import sys
 
 from matplotlib import pyplot
 
-def run(purchase_cost, sell_fee, house_price, interest_rate, duration, rent):
-    deposit = house_price * 0.1
+def run(purchase_cost, sell_fee, house_price, ltv, interest_rate, duration, rent):
+    deposit = house_price * ltv
     loan = house_price - deposit
     monthly_interest_rate = interest_rate/12
     num_installments = 12 * duration
@@ -35,11 +35,11 @@ def run(purchase_cost, sell_fee, house_price, interest_rate, duration, rent):
         total_rent += rent
         loss = total_interest + deposit + purchase_cost + sell_fee * house_price
 
-def main(purchase_cost, sell_fee, house_price, interest_rate, duration, rent, plot):
+def main(purchase_cost, sell_fee, house_price, ltv, interest_rate, duration, rent, plot):
     if plot:
         loss = []
         total_rent = []
-        for it in run(purchase_cost, sell_fee, house_price, interest_rate, duration, rent):
+        for it in run(purchase_cost, sell_fee, house_price, ltv, interest_rate, duration, rent):
             loss.append(it['loss'])
             total_rent.append(it['total_rent'])
         pyplot.plot(loss)
@@ -54,6 +54,7 @@ def main(purchase_cost, sell_fee, house_price, interest_rate, duration, rent, pl
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Compare renting vs buying')
     parser.add_argument('--house-price', type=int, required=True, help='Price of the house to buy')
+    parser.add_argument('--ltv', type=float, default=0.1, help='loan-to-value, default 10%')
     parser.add_argument('--purchase-cost', type=int, required=True, help='Non-refundable purchase cost')
     parser.add_argument('--sell-fee', type=float, required=True, help='% asked from agency to resell the house')
     parser.add_argument('--interest-rate', type=float, required=True, help='Annual interest rate')
